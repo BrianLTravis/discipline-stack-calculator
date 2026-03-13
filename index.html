@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discipline Stack V10 Live Calculator — Enhanced</title>
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --card:#ffffff;
+      --muted:#64748b;
+      --text:#0f172a;
+      --border:#e2e8f0;
+      --accent:#0f172a;
+      --accent-2:#1d4ed8;
+      --pass-bg:#dcfce7;
+      --pass:#166534;
+      --fail-bg:#fee2e2;
+      --fail:#991b1b;
+      --soft:#f1f5f9;
+      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      line-height:1.45;
+    }
+    .wrap{max-width:1280px;margin:0 auto;padding:28px}
+    .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:start;margin-bottom:24px}
+    .eyebrow{text-transform:uppercase;letter-spacing:.2em;color:var(--muted);font-size:.78rem;font-weight:700}
+    h1{margin:.4rem 0 0;font-size:clamp(2rem,4vw,3.8rem);line-height:1.03}
+    .sub{margin-top:14px;max-width:850px;color:var(--muted);font-size:1.02rem}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+    .dark{background:linear-gradient(180deg,#111827,#0f172a);color:#fff;border:none}
+    .result{font-size:clamp(2.2rem,5vw,4rem);font-weight:800;margin:.45rem 0}
+    .meta{color:#cbd5e1;font-size:.95rem}
+    .grid{display:grid;grid-template-columns:1.05fr .95fr;gap:24px}
+    .stack{display:grid;gap:24px}
+    h2{margin:0 0 8px;font-size:1.25rem}
+    .desc{color:var(--muted);font-size:.95rem;margin:0 0 14px}
+    .form-grid{display:grid;gap:14px;grid-template-columns:repeat(3,minmax(0,1fr))}
+    .form-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    label{display:block;font-size:.92rem;font-weight:600}
+    input,select,button{width:100%;margin-top:8px;border:1px solid var(--border);background:#fff;color:var(--text);border-radius:16px;padding:12px 14px;font:inherit}
+    button{cursor:pointer;font-weight:700;transition:.18s ease}
+    button:hover{transform:translateY(-1px)}
+    .btn-dark{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .btn-soft{background:var(--soft)}
+    .summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .mini{background:var(--soft);border-radius:18px;padding:14px}
+    .mini .label{color:var(--muted);font-size:.86rem}
+    .mini .value{margin-top:4px;font-size:1.65rem;font-weight:800}
+    .status{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--soft);border-radius:18px;padding:12px 14px;margin-top:10px}
+    .pill{padding:6px 10px;border-radius:999px;font-size:.83rem;font-weight:800}
+    .pass{background:var(--pass-bg);color:var(--pass)}
+    .fail{background:var(--fail-bg);color:var(--fail)}
+    .signal{border:1px solid var(--border);border-radius:18px;padding:14px;margin-top:10px}
+    .signal-top{display:flex;justify-content:space-between;gap:12px;align-items:start}
+    .signal small{color:var(--muted)}
+    .signal .big{font-size:1.08rem;font-weight:800}
+    .table{width:100%;border-collapse:separate;border-spacing:0 10px;margin-top:8px}
+    .table td{background:var(--soft);padding:12px 14px}
+    .table td:first-child{border-radius:14px 0 0 14px}
+    .table td:last-child{border-radius:0 14px 14px 0;text-align:right;font-weight:700}
+    .toggle-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+    .toggle{border:1px solid var(--border);background:var(--soft);border-radius:18px;padding:14px;text-align:left;font-weight:700}
+    .toggle.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+    .state-box{border-radius:22px;padding:18px;background:#0f172a;color:#fff}
+    .state-name{font-size:1.8rem;font-weight:800;margin-top:4px}
+    .state-detail{color:#cbd5e1;margin-top:6px}
+    .gauge-wrap{margin-top:16px}
+    .gauge-labels{display:flex;justify-content:space-between;font-size:.78rem;color:#64748b;margin-bottom:8px;gap:8px}
+    .gauge-track{position:relative;height:18px;background:linear-gradient(90deg,#991b1b 0%,#ea580c 25%,#2563eb 50%,#16a34a 75%,#166534 100%);border-radius:999px;overflow:hidden}
+    .gauge-marker{position:absolute;top:-4px;width:10px;height:26px;background:#fff;border:2px solid #0f172a;border-radius:999px;transform:translateX(-50%)}
+    .legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+    .legend-item{background:var(--soft);border-radius:16px;padding:10px;font-size:.85rem}
+    .note{font-size:.9rem;color:var(--muted);margin-top:12px}
+    @media (max-width:1080px){
+      .hero,.grid,.form-grid,.form-grid.two,.toggle-grid,.legend{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Bitcoin Discipline Stack</div>
+        <h1>V10 Enhanced Live Calculator</h1>
+        <p class="sub">
+          This version adds a system-state panel and a market regime gauge so the output feels like a compact
+          financial dashboard rather than a plain calculator.
+        </p>
+      </div>
+      <div class="card dark">
+        <div class="eyebrow" style="color:#94a3b8">Today's output</div>
+        <div id="finalBuy" class="result">$0.00</div>
+        <div id="headlineMeta" class="meta">Base buy: $0.00 · Multiplier: 1.00x</div>
+        <div class="summary-grid" style="margin-top:16px">
+          <div class="mini" style="background:rgba(255,255,255,.08)">
+            <div class="label" style="color:#cbd5e1">Asymmetry score</div>
+            <div id="heroScore" class="value">0.0</div>
+          </div>
+          <div class="mini" style="background:rgba(255,255,255,.08)">
+            <div class="label" style="color:#cbd5e1">Weekly net drift</div>
+            <div id="heroDrift" class="value">$0.00</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="stack">
+        <div class="card">
+          <h2>Core inputs</h2>
+          <div class="form-grid">
+            <label>Bank
+              <input id="bank" type="number" step="0.01" value="1621.71" />
+            </label>
+            <label>Governor
+              <input id="governor" type="number" step="0.01" value="1500" />
+            </label>
+            <label>Weekly inflow
+              <input id="weeklyInflow" type="number" step="0.01" value="600" />
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Market inputs</h2>
+          <div class="form-grid two">
+            <label>MVRV Z-Score
+              <input id="mvrvZ" type="number" step="0.01" value="0.83" />
+            </label>
+            <label>Fear &amp; Greed
+              <input id="fearGreed" type="number" step="1" value="15" />
+            </label>
+            <label>7-day funding average
+              <input id="funding7d" type="number" step="0.0001" value="-0.0020" />
+            </label>
+            <label>STH-MVRV
+              <input id="sthMvrv" type="number" step="0.01" value="0.80" />
+            </label>
+            <label>Power law state
+              <select id="powerLawState">
+                <option value="far_below">Far below trend</option>
+                <option value="below" selected>Below trend</option>
+                <option value="near">Near fair value</option>
+                <option value="above">Above trend</option>
+                <option value="far_above">Far above trend</option>
+              </select>
+            </label>
+            <label>BTC price
+              <input id="btcPrice" type="number" step="0.01" value="71600" />
+            </label>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Persistence rule</h2>
+          <p class="desc">Acceleration only activates after 3 consecutive days of favorable asymmetry.</p>
+          <div class="toggle-grid">
+            <button class="toggle active" data-toggle="persist1">Day 1: Pass</button>
+            <button class="toggle active" data-toggle="persist2">Day 2: Pass</button>
+            <button class="toggle active" data-toggle="persist3">Day 3: Pass</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <h2>Discipline Stack state</h2>
+          <div class="state-box">
+            <div class="eyebrow" style="color:#94a3b8">System state</div>
+            <div id="stateName" class="state-name">Neutral</div>
+            <div id="stateDetail" class="state-detail">Base deployment active.</div>
+          </div>
+
+          <div class="gauge-wrap">
+            <div class="gauge-labels">
+              <span>Capitulation</span>
+              <span>Accumulation</span>
+              <span>Neutral</span>
+              <span>Euphoria</span>
+            </div>
+            <div class="gauge-track">
+              <div id="gaugeMarker" class="gauge-marker" style="left:50%;"></div>
+            </div>
+            <div id="gaugeText" class="note">Market regime: Neutral</div>
+          </div>
+
+          <div class="legend">
+            <div class="legend-item"><strong>Defensive</strong><br/>Bank below governor</div>
+            <div class="legend-item"><strong>Neutral</strong><br/>Base buy only</div>
+            <div class="legend-item"><strong>Accumulation</strong><br/>Signals favorable, waiting persistence</div>
+            <div class="legend-item"><strong>Acceleration</strong><br/>Tier increase active</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Protocol decision</h2>
+          <div id="statusGovernor" class="status"><span>Governor check</span><span class="pill fail">FAIL</span></div>
+          <div id="statusAsymmetry" class="status"><span>Asymmetry threshold (≥ 60)</span><span class="pill fail">FAIL</span></div>
+          <div id="statusFunding" class="status"><span>Funding confirmation (&lt; 0)</span><span class="pill fail">FAIL</span></div>
+          <div id="statusPersistence" class="status"><span>3-day persistence</span><span class="pill fail">FAIL</span></div>
+        </div>
+
+        <div class="card">
+          <h2>Output summary</h2>
+          <div class="summary-grid">
+            <div class="mini"><div class="label">Base daily buy</div><div id="baseBuy" class="value">$0.00</div></div>
+            <div class="mini"><div class="label">Final daily buy</div><div id="finalBuy2" class="value">$0.00</div></div>
+            <div class="mini"><div class="label">Weekly BTC outflow</div><div id="weeklyOutflow" class="value">$0.00</div></div>
+            <div class="mini"><div class="label">Weekly net drift</div><div id="weeklyDrift" class="value">$0.00</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>5-day bank path</h2>
+          <table class="table" id="bankPathTable"></table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = { persist1:true, persist2:true, persist3:true };
+    const $ = id => document.getElementById(id);
+    const els = {
+      bank:$("bank"), governor:$("governor"), weeklyInflow:$("weeklyInflow"),
+      mvrvZ:$("mvrvZ"), fearGreed:$("fearGreed"), funding7d:$("funding7d"),
+      sthMvrv:$("sthMvrv"), powerLawState:$("powerLawState"), btcPrice:$("btcPrice")
+    };
+
+    function fmtUsd(n){
+      return new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2}).format(Number.isFinite(n)?n:0);
+    }
+    function parseNum(v){ const n = Number(v); return Number.isFinite(n) ? n : 0; }
+    function setStatus(id, pass){
+      $(id).lastElementChild.outerHTML = `<span class="pill ${pass ? "pass" : "fail"}">${pass ? "PASS" : "FAIL"}</span>`;
+    }
+    function renderToggles(){
+      document.querySelectorAll(".toggle").forEach(btn=>{
+        const key = btn.dataset.toggle;
+        const active = !!state[key];
+        btn.classList.toggle("active", active);
+        const label = key === "persist1" ? "Day 1" : key === "persist2" ? "Day 2" : "Day 3";
+        btn.textContent = `${label}: ${active ? "Pass" : "Fail"}`;
+      });
+    }
+    function scoreSignal(raw){
+      if(raw >= 0.9) return "Strong";
+      if(raw >= 0.7) return "Favorable";
+      if(raw >= 0.4) return "Neutral";
+      return "Weak";
+    }
+    function compute(){
+      const bank = parseNum(els.bank.value);
+      const governor = parseNum(els.governor.value);
+      const inflow = parseNum(els.weeklyInflow.value);
+      const mvrvZ = parseNum(els.mvrvZ.value);
+      const fearGreed = parseNum(els.fearGreed.value);
+      const funding7d = parseNum(els.funding7d.value);
+      const sthMvrv = parseNum(els.sthMvrv.value);
+      const powerLawState = els.powerLawState.value;
+
+      const baseDailyBuy = bank * 0.0222222;
+      const governorPass = bank >= governor;
+
+      const scoreMvrv = mvrvZ < 0 ? 1 : mvrvZ < 0.8 ? 0.75 : mvrvZ < 1.2 ? 0.5 : mvrvZ < 2 ? 0.25 : 0;
+      const scorePower = powerLawState === "far_below" ? 1 : powerLawState === "below" ? 0.75 : powerLawState === "near" ? 0.5 : powerLawState === "above" ? 0.2 : 0;
+      const scoreFg = fearGreed < 15 ? 1 : fearGreed < 25 ? 0.8 : fearGreed < 40 ? 0.5 : fearGreed < 60 ? 0.25 : 0;
+      const scoreFunding = funding7d < -0.002 ? 1 : funding7d < 0 ? 0.75 : funding7d <= 0.002 ? 0.35 : 0;
+      const scoreSth = sthMvrv < 0.8 ? 1 : sthMvrv < 0.95 ? 0.75 : sthMvrv < 1.1 ? 0.3 : 0;
+
+      const weightedScore =
+        scoreMvrv * 30 +
+        scorePower * 25 +
+        scoreFg * 15 +
+        scoreFunding * 15 +
+        scoreSth * 15;
+
+      const asymmetryPass = weightedScore >= 60;
+      const fundingPass = funding7d < 0;
+      const persistencePass = state.persist1 && state.persist2 && state.persist3;
+
+      let multiplier = 1.0;
+      if(governorPass && fundingPass && persistencePass && weightedScore >= 80){
+        multiplier = 1.5;
+      } else if(governorPass && fundingPass && persistencePass && weightedScore >= 60){
+        multiplier = 1.25;
+      }
+
+      const finalBuy = baseDailyBuy * multiplier;
+      const weeklyOutflow = finalBuy * 7;
+      const weeklyDrift = inflow - weeklyOutflow;
+
+      let systemState = "Neutral";
+      let systemDetail = "Base deployment active.";
+      if(!governorPass){
+        systemState = "Defensive";
+        systemDetail = "Bank below governor. Base buy only.";
+      } else if(asymmetryPass && fundingPass && !persistencePass){
+        systemState = "Accumulation";
+        systemDetail = "Signals favorable. Waiting for persistence confirmation.";
+      } else if(asymmetryPass && fundingPass && persistencePass && multiplier > 1){
+        systemState = "Acceleration";
+        systemDetail = `Tier increase active at ${multiplier.toFixed(2)}x.`;
+      } else if(asymmetryPass && !fundingPass){
+        systemState = "Neutral";
+        systemDetail = "Signals favorable, but funding confirmation not satisfied.";
+      }
+
+      let regimePos = 50;
+      let regimeText = "Neutral";
+      if(weightedScore >= 80){
+        regimePos = 15;
+        regimeText = "Capitulation / deep opportunity";
+      } else if(weightedScore >= 60){
+        regimePos = 35;
+        regimeText = "Accumulation zone";
+      } else if(weightedScore >= 40){
+        regimePos = 55;
+        regimeText = "Neutral";
+      } else if(weightedScore >= 20){
+        regimePos = 75;
+        regimeText = "Warm / optimistic";
+      } else {
+        regimePos = 92;
+        regimeText = "Euphoria / caution";
+      }
+
+      $("finalBuy").textContent = fmtUsd(finalBuy);
+      $("finalBuy2").textContent = fmtUsd(finalBuy);
+      $("baseBuy").textContent = fmtUsd(baseDailyBuy);
+      $("weeklyOutflow").textContent = fmtUsd(weeklyOutflow);
+      $("weeklyDrift").textContent = fmtUsd(weeklyDrift);
+      $("heroDrift").textContent = fmtUsd(weeklyDrift);
+      $("heroScore").textContent = weightedScore.toFixed(1);
+      $("headlineMeta").textContent = `Base buy: ${fmtUsd(baseDailyBuy)} · Multiplier: ${multiplier.toFixed(2)}x`;
+
+      $("stateName").textContent = systemState;
+      $("stateDetail").textContent = systemDetail;
+      $("gaugeMarker").style.left = regimePos + "%";
+      $("gaugeText").textContent = `Market regime: ${regimeText}`;
+
+      setStatus("statusGovernor", governorPass);
+      setStatus("statusAsymmetry", asymmetryPass);
+      setStatus("statusFunding", fundingPass);
+      setStatus("statusPersistence", persistencePass);
+
+      let running = bank;
+      const rows = [];
+      for(let day=1; day<=5; day++){
+        running -= finalBuy;
+        rows.push(`<tr><td>Day ${day}</td><td>${fmtUsd(running)}</td></tr>`);
+      }
+      $("bankPathTable").innerHTML = rows.join("");
+    }
+
+    document.querySelectorAll("input, select").forEach(el => {
+      el.addEventListener("input", compute);
+      el.addEventListener("change", compute);
+    });
+    document.querySelectorAll(".toggle").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const key = btn.dataset.toggle;
+        state[key] = !state[key];
+        renderToggles();
+        compute();
+      });
+    });
+
+    renderToggles();
+    compute();
+  </script>
+</body>
+</html>
